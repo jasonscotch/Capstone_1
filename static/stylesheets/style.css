@@ -1,0 +1,193 @@
+/* ====================== General */
+
+body {
+  background-color: #111111;
+  min-height: 100vh;
+}
+
+body.error-404 {
+  background-color: #2B4743;
+}
+
+.form-control {
+  margin-bottom: 20px;
+}
+
+.btn {
+  border-radius: 50px;
+}
+
+
+h1 {
+  color: #E6E3DD;
+  font-family: 'Archivo Black', sans-serif;
+}
+h2 {
+  color: #E6E3DD;
+  font-family: 'Archivo Black', sans-serif;
+}
+
+#home {
+  color: #E6E3DD;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 100px;
+}
+#home2 {
+  padding: 15px;
+  border-radius: 1%;
+  background-color: rgba(43, 71, 67,.90);
+  color: #E6E3DD;
+}
+
+.empty {
+  min-height: 100vh;
+}
+/* ======================= Nav */
+
+.navbar {
+  background-color: #2B4743;
+  height: 75px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 9999;
+}
+
+.navbar a {
+  color:#E6E3DD;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand > img {
+  display: inline-block;
+  margin-bottom: 2px;
+  margin-right: 5px;
+  width: 250px;
+  border-radius: 2px;
+}
+
+ul.nav.navbar-nav {
+  align-items: center;
+}
+
+ul.nav.navbar-nav li {
+  margin: 0 0.5rem;
+  display: flex;
+}
+
+.onboarding > .navbar {
+  background-color: #2B4743;
+  background-size: 100% 100%;
+}
+
+.onboarding .navbar-header {
+  margin: 0 auto;
+}
+
+.onboarding .navbar-brand {
+  margin: 0;
+}
+
+.onboarding .navbar-brand span {
+  display: none;
+}
+
+.onboarding .nav.navbar-nav.navbar-right {
+  position: absolute;
+  right: 16px;
+}
+
+.onboarding > .navbar a {
+  color: #E6E3DD;
+}
+
+.onboarding > .navbar form.navbar-form {
+  display: none;
+}
+
+.onboarding {
+  background-image: url('/static/images/background.jpg');
+}
+.background {
+  background-image: url('/static/images/background.jpg');
+  height: 100vh;
+}
+
+#login {
+  padding: 15px;
+  border-radius: 1%;
+  background-color: rgba(43, 71, 67,.65);
+}
+
+/* ========================== Signup/Login */
+
+#user_form input.form-control {
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px;
+  
+}
+#user_form p {
+  color: #E6E3DD;
+}
+
+/* =========================== Edit Page */
+
+.edit-btn-area {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-btn-area > .btn {
+  width: 48%;
+}
+
+/* ================================ 404 page */
+
+.message-404 {
+  color: #E6E3DD;
+  margin-top: 2em;
+  text-align: center;
+}
+
+.message-404 a {
+  color: #E6E3DD;
+}
+
+.message-404 > h4.display-4 {
+  font-size: 2.5em;
+  color: #E6E3DD;
+}
+
+.message-404 .form-inline input {
+  flex: 1;
+}
+
+.btn-custom {
+  background-color: #2B4743;
+  color: #E6E3DD;
+}
+
+.btn-custom2 {
+  background-color: #E6E3DD;
+  color: #2B4743;
+}
+
+#btn-custom2 {
+  color: #2B4743;
+}
+
+#dropdown {
+  color: #2B4743;
+}
+
+.main {
+  height: 75px;
+}
+

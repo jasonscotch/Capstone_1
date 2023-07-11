@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>DataLens</title>
+
+  <link rel="stylesheet"
+        href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
+  <script src="https://unpkg.com/jquery"></script>
+  <script src="https://unpkg.com/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+  <script src="https://unpkg.com/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+  <link rel="stylesheet" href="/static/stylesheets/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
+  <!-- <link rel="shortcut icon" href="/static/favicon.ico"> -->
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+<nav class="navbar navbar-expand">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a href="/" class="navbar-brand">
+        <img src="/static/images/dt-large.png" alt="logo">
+      </a>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      {% if not g.user %}
+      <li><a href="/signup">Sign up</a></li>
+      <li><a href="/login">Log in</a></li>
+      {% else %}
+      <li><a href="/dash" class="btn btn-custom2" id="btn-custom2">Create a Dashboard</a></li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><u>Favorites</u></a>
+        <ul class="dropdown-menu">
+          {% for dashboard in dashboards %}
+          <li><a class="dropdown-item" id="dropdown" href="/dash/{{ dashboard.id }}">{{ dashboard.dash_name }}</a></li>
+          {% endfor %}
+        </ul>
+      </li>
+      <li><a href="/dashboard">All Vizs</a></li>
+      <li>
+        <a href="/user/profile/edit">{{ g.user.first_name }}</a>
+      </li>
+      <li><a href="/logout">Log out</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+<div class="container-fluid">
+  {% for category, message in get_flashed_messages(with_categories=True) %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+
+  {% block content %}
+  {% endblock %}
+
+
+  
+</div> 
+
+
+</body>
+</html>

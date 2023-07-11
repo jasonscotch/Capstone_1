@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Spotify Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.plot.ly/plotly-latest.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>All Available Visualizations</h1>
+    <div class="row">
+        <div class="col-md-6">
+          <div id="heatmap">
+            {{ heatmap_plot | safe }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="energy-loudness-plot">
+            {{ energy_loudness_plot | safe }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div id="num-songs-per-year">
+            {{ num_songs_per_year_plot | safe }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="top-10-artists">
+            {{ top_10_artists_plot | safe }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div id="genres-plot">
+            {{ genres_plot | safe }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="popularity-loudness-plot">
+            {{ popularity_loudness_plot | safe }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div id="histo-popularity-plot">
+            {{ histo_popularity_plot | safe }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="danceability-energy-plot">
+            {{ danceability_energy_plot | safe }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div id="song-count">
+            {{ popularity_over_time_plot | safe }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="genre-count">
+            {{ loudness_by_genre_plot | safe }}
+          </div>
+        </div>
+      </div>
+
+</body>   
+
+{% endblock %}

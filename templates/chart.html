@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <title>Spotify Chart</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="chart-container1">
+        {{ chart_html|safe }}
+    </div>
+    <div id="chart-container2">
+        {{ chart_html|safe }}
+    </div>
+
+{% endblock %}
