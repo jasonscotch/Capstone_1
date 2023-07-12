@@ -50,7 +50,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config.from_pyfile('config.py')
 
-db.init_app(app)
+# db.init_app(app)
 
 app.config['ERROR_404_HELP'] = False
 
