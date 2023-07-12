@@ -10,7 +10,7 @@ import collections
 import requests
 
 from flask import Flask, render_template, flash, redirect, session, g, url_for, request
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required 
 from sqlalchemy.exc import IntegrityError
 
 import plotly.graph_objects as go
@@ -1370,3 +1370,7 @@ def delete_user():
     else:
         flash('Access unauthorized.', 'danger')
         return redirect("/home")
+    
+
+if __name__ == "__main__":
+    app.run()
