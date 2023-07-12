@@ -192,7 +192,7 @@ def spotifyLogin():
     sp_oauth = create_spotify_oauth(user.username)
     auth_url = sp_oauth.get_authorize_url()
     token = sp_oauth.get_cached_token()
-    raise Exception
+    
     return redirect(auth_url)
 
 
@@ -235,7 +235,7 @@ def redirected():
     token = sp_oauth.get_cached_token()
     
     token_info = sp_oauth.get_access_token(code)
-    raise Exception
+    
     session[TOKEN_INFO_KEY] = token_info
     
     return redirect(url_for('gettracks', _external=True))
@@ -260,7 +260,7 @@ def gettracks():
     
     # Get all saved tracks
     all_songs = sp.current_user_saved_tracks(limit=50)['items']
-    raise Exception
+    
     # Get all recently played tracks
     num_items_to_retrieve = 300
     recently_played = []
