@@ -63,6 +63,10 @@ dash_app.css.config.serve_locally = True
 # dash_app.run_server(debug=True)
 
 
+if __name__ == "__main__":
+    app.run()
+    
+    
 # User signup/login/logout
 @app.before_request
 def add_user_to_g():
@@ -1372,5 +1376,3 @@ def delete_user():
         return redirect("/home")
     
 
-if __name__ == "__main__":
-    app.run()
