@@ -204,7 +204,7 @@ ul.nav.navbar-nav li {
   --s: 3s; /* change speed */
 }
 
-*, *:before, *:after {
+.content2, .content2:before, .content2:after {
 	box-sizing: border-box;
 	transform-style: preserve-3d;
 }
