@@ -23,16 +23,23 @@
 <body class="{% block body_class %}{% endblock %}">
 <nav class="navbar navbar-expand">
   <div class="container-fluid">
+    {% if not g.user %}
     <div class="navbar-header">
       <a href="/" class="navbar-brand">
         <img src="/static/images/dt-large.png" alt="logo">
       </a>
     </div>
     <ul class="nav navbar-nav navbar-right">
-      {% if not g.user %}
+      
       <li><a href="/signup">Sign up</a></li>
       <li><a href="/login">Log in</a></li>
       {% else %}
+      <div class="navbar-header">
+        <a href="/home" class="navbar-brand">
+          <img src="/static/images/dt-large.png" alt="logo">
+        </a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
       <li><a href="/dash" class="btn btn-custom2" id="btn-custom2">Create a Dashboard</a></li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><u>Favorites</u></a>

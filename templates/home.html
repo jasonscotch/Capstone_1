@@ -1,12 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="background">
+  
+  <div class="content" id="loading-animation" style="display: none;"> 
+      <div class="bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <div class="bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div id="subtitle" style="display: none;">
+      <h4>Sorry, this part takes some time...</h4>
+    </div>
+    
+  <div class="background" id="background">
     <br> <br> <br>
     <div class="container" id="home2">
       <h1 id="home">Discover the Melody</h1>
       <h1 id="home">of Spotify-driven Visualizations</h1>
-      <a href="/" class="btn btn-custom2 btn-lg" id="btn-custom2">Start Your Journey</a>
+      <button id="get-tracks-button" class="btn btn-custom2 btn-lg">Start Your Journey</button>
     </div>
-
+    
   </div>
+  <script>
+    $(document).ready(function() {
+      $("#get-tracks-button").click(function() {
+        $("#loading-animation").show();
+        $("#subtitle").show()
+        $("#background").hide() // Show the loading animation
+        $.get("/gettracks", function(response) {
+          // Handle the response
+          console.log(response.message); // Example: Log the success message
+          // Perform any necessary actions on success
+          window.location.href = "/dashboard"; // Redirect to the desired page
+        })
+        });
+      });
+  </script>
+  
 {% endblock %}

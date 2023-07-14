@@ -1,17 +1,17 @@
 import os
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-# import spotipy.util as util
-from dotenv import load_dotenv
+from spotipy.oauth2 import SpotifyClientCredentials
 import time
+
+from dotenv import load_dotenv
 from datetime import datetime
 import re
 import collections
-import requests
 
-from flask import Flask, render_template, flash, redirect, session, g, url_for, request
+from flask import Flask, render_template, flash, redirect, session, g, url_for, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import exists
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -49,8 +49,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config.from_pyfile('config.py')
-
-# db.init_app(app)
 
 app.config['ERROR_404_HELP'] = False
 
@@ -159,63 +157,24 @@ def login():
 def logout():
     """Handle logout of user."""
     
-    token_info = session.get(SPOTIFY_TOKEN_KEY)
-    if token_info:
-        access_token = token_info['access_token']
-        revoke_url = 'https://accounts.spotify.com/api/token/revoke'
-        headers = {'Authorization': 'Bearer ' + access_token}
-        requests.post(revoke_url, headers=headers)
+    # token_info = session.get(SPOTIFY_TOKEN_KEY)
+    # if token_info:
+    #     access_token = token_info['access_token']
+    #     revoke_url = 'https://accounts.spotify.com/api/token/revoke'
+    #     headers = {'Authorization': 'Bearer ' + access_token}
+    #     requests.post(revoke_url, headers=headers)
     
     do_logout()
     session.clear()
     
     flash('Goodbye!', 'success')
     return redirect('/login')
-
-
-# Spotify login stuff and oauth  
-def create_spotify_oauth(username):
-    return SpotifyOAuth(
-        username=username,
-        client_id=client_id,
-        client_secret=client_secret,
-        redirect_uri=url_for('redirected', _external=True),
-        scope="user-library-read user-read-recently-played user-top-read",
-        open_browser=True,
-        show_dialog=True,
-        
-    )
-    
+ 
     
 @app.route('/')
-@login_required
-def spotifyLogin():
-    user = User.query.get(session[CURR_USER_KEY])
-    sp_oauth = create_spotify_oauth(user.username)
-    auth_url = sp_oauth.get_authorize_url()
-    token = sp_oauth.get_cached_token()
-    
-    return redirect(auth_url)
+def index():
 
-
-def get_token():
-    token_info = session.get(TOKEN_INFO_KEY, None)
-    user = User.query.get(session[CURR_USER_KEY])
-    if not token_info:
-        # flash("Access unauthorized.", "danger")
-        # return redirect(url_for('/'))
-        raise Exception('Access unauthorized')
-    
-    now = int(time.time())
-    
-    is_expired = token_info['expires_at'] - now < 60
-    
-    if (is_expired):
-        sp_oauth = create_spotify_oauth(user.username)
-        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        session[TOKEN_INFO_KEY] = token_info
-    # raise Exception
-    return token_info
+    return redirect(url_for('login', _external=True))
 
 
 @app.route('/home')
@@ -227,84 +186,64 @@ def homepage():
     return render_template('home.html', dashboards=dashboards)
 
 
-@app.route('/redirect')
-@login_required
-def redirected():
-    
-    user = User.query.get(session[CURR_USER_KEY])
-    sp_oauth = create_spotify_oauth(user.username)
-    code = request.args.get('code')
-    token = sp_oauth.get_cached_token()
-    
-    token_info = sp_oauth.get_access_token(code)
-    
-    session[TOKEN_INFO_KEY] = token_info
-    
-    return redirect(url_for('gettracks', _external=True))
-
-
 @app.route('/gettracks')
 @login_required
 def gettracks():
-    token_info = session.get(TOKEN_INFO_KEY, None)
-    if not token_info:
-        raise Exception("Access unauthorized")
-
-    # try:
-    #     token_info = get_token()
-    # except:
-    #     print("User not logged into Spotify")
-        # return redirect(url_for('homepage', _external=True))
-        # raise Exception
-    access_token = token_info['access_token']
-    sp = spotipy.Spotify(auth=access_token)
-    user_id = session[CURR_USER_KEY]
-    
-    # Get all saved tracks
-    all_songs = sp.current_user_saved_tracks(limit=50)['items']
-    
-    # Get all recently played tracks
-    num_items_to_retrieve = 300
-    recently_played = []
-    while len(recently_played) < num_items_to_retrieve:
-        limit = min(50, num_items_to_retrieve - len(recently_played))
-        response = sp.current_user_recently_played(limit=limit)
-        items = response['items']
-        recently_played.extend(items)
-        if len(items) < limit or len(recently_played) >= num_items_to_retrieve:
-            break
+ 
+    user = User.query.get(session[CURR_USER_KEY])
+    auth_manager = SpotifyClientCredentials(client_id, client_secret)
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    playlists = sp.user_playlists(user.username)
 
     # Collect unique Spotify IDs of existing songs
-    existing_spotify_ids = set()
-    existing_songs = Songs.query.filter_by(user_id=user_id).all()
-    for song in existing_songs:
-        existing_spotify_ids.add(song.spotify_id)
+    existing_spotify_ids_subquery = db.session.query(Songs.spotify_id).filter(Songs.user_id == user.user_id).subquery()
+    existing_spotify_ids = {row[0] for row in db.session.query(existing_spotify_ids_subquery).with_entities(existing_spotify_ids_subquery.c.spotify_id).all()}
+
 
     # Collect data for new songs
     songs_to_add = []
-    for item in all_songs + recently_played:
-        track = item['track']
-        spotify_id = track['id']
+    track_ids = []
 
-        if spotify_id in existing_spotify_ids:
-            continue
+    for playlist in playlists['items']:
+        if playlist['owner']['id'] == user.username:
+            playlist_id = playlist['id']
+            results = sp.playlist(playlist_id, fields="tracks,next")
+            tracks = results['tracks']
 
-        audio_features = sp.audio_features([spotify_id])[0]
-        release_date = sp.album(track['album']['id'])['release_date']
-        artist = sp.artist(track['artists'][0]['uri'])
-        popularity = artist['popularity']
-        genres = [re.sub(r'[{}"]', '', genre).strip() for genre in artist['genres'] if genre.strip()]
-        genres_string = ",".join(genres)
+            while tracks:
+                for item in tracks['items']:
+                    track = item['track']
+                    spotify_id = track['id']
 
-        tracks_with_features = {
-            **track,
-            **audio_features,
-            'release_date': release_date,
-            'popularity': popularity,
-            'genres': genres_string
-        }
+                    if not spotify_id or spotify_id in existing_spotify_ids:
+                        continue
 
-        songs_to_add.append(tracks_with_features)
+                    track_ids.append(spotify_id)
+                    audio_features = sp.audio_features(track_ids)
+
+                    for audio_feature in audio_features:
+                        release_date = sp.album(track['album']['id'])['release_date']
+                        artist = sp.artist(track['artists'][0]['uri'])
+                        popularity = artist['popularity']
+                        genres = [re.sub(r'[{}"]', '', genre).strip() for genre in artist['genres'] if genre.strip()]
+                        genres_string = ",".join(genres)
+
+                        track_with_features = {
+                            **track,
+                            **audio_feature,
+                            'release_date': release_date,
+                            'popularity': popularity,
+                            'genres': genres_string
+                        }
+
+                        songs_to_add.append(track_with_features)
+
+                    track_ids = []
+
+                if tracks['next']:
+                    tracks = sp.next(tracks)
+                else:
+                    tracks = None
 
     # Add new songs to the database
     songs = [
@@ -333,15 +272,15 @@ def gettracks():
             uri=track['uri'],
             valence=track['valence'],
             genres=track['genres'],
-            user_id=user_id
+            user_id=user.user_id
         )
         for track in songs_to_add
     ]
 
-    db.session.add_all(songs)
+    db.session.bulk_save_objects(songs)
     db.session.commit()
 
-    return redirect('/dashboard')
+    return jsonify({'message': 'Tracks added successfully'})
 
 
 @app.route('/dashboard')
