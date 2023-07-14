@@ -106,7 +106,6 @@ class UserFavoriteDashboards(db.Model):
     
     dash_name = db.Column(
         db.String,
-        unique=True,
         nullable=False
     )
     
