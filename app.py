@@ -1,7 +1,6 @@
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import time
 
 from dotenv import load_dotenv
 from datetime import datetime
@@ -11,7 +10,6 @@ import collections
 from flask import Flask, render_template, flash, redirect, session, g, url_for, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import exists
 
 import plotly.graph_objects as go
 import plotly.express as px

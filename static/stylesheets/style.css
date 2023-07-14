@@ -200,7 +200,7 @@ ul.nav.navbar-nav li {
 	--w: #dcdcd2;
 }	
 
-.content {
+.content2 {
   --s: 3s; /* change speed */
 }
 
@@ -209,7 +209,7 @@ ul.nav.navbar-nav li {
 	transform-style: preserve-3d;
 }
 
-body.content {
+body.content2 {
 	margin: 0;
 	padding: 0;
 	width: 100vw;
@@ -221,7 +221,7 @@ body.content {
 	background: var(--b);
 }
 
-.content {
+.content2 {
 	width: 50vmin;
 	height: 50vmin;
 	text-align: center;
