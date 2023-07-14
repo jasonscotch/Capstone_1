@@ -195,13 +195,12 @@ ul.nav.navbar-nav li {
 
 /* Loader Details */
 
-:root {
-	--b: #262626;
-	--w: #dcdcd2;
-}	
+
 
 .content2 {
   --s: 3s; /* change speed */
+  --b: #262626;
+	--w: #dcdcd2;
 }
 
 .content2, .content2:before, .content2:after {

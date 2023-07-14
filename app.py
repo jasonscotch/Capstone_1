@@ -155,13 +155,6 @@ def login():
 def logout():
     """Handle logout of user."""
     
-    # token_info = session.get(SPOTIFY_TOKEN_KEY)
-    # if token_info:
-    #     access_token = token_info['access_token']
-    #     revoke_url = 'https://accounts.spotify.com/api/token/revoke'
-    #     headers = {'Authorization': 'Bearer ' + access_token}
-    #     requests.post(revoke_url, headers=headers)
-    
     do_logout()
     session.clear()
     
@@ -1172,6 +1165,7 @@ def create_dash_application():
         Input('save-button', 'n_clicks')
     )
     def save_dropdown_data(title, value1, value2, value3, value4, value5, value6, value7, value8, n_clicks):
+        user_id = session[CURR_USER_KEY]
         if n_clicks is not None and n_clicks > 0:
             fav_dash = UserFavoriteDashboards(
                 dash_name=title, 
@@ -1182,7 +1176,8 @@ def create_dash_application():
                 viz_1=value1,
                 viz_2=value2,
                 viz_3=value3,
-                viz_4=value4
+                viz_4=value4,
+                user_id=user_id
             )
             db.session.add(fav_dash)
             db.session.commit()
@@ -1199,24 +1194,25 @@ def create_dash_application():
 
 
 def saved_dash_application(dash_id):
-    # dashboards = UserFavoriteDashboards.query.filter_by(user_id=current_user.user_id).get(dash_id)
+    user_id = session[CURR_USER_KEY]
+    dashboard = UserFavoriteDashboards.query.filter_by(user_id=user_id).filter_by(id=dash_id).first()
     
-    # all_songs = Songs.query.filter_by(user_id=current_user.user_id).all()
-
-    # energy_loudness = create_energy_loudness_plot(all_songs)
-    # popularity_loudness = create_popularity_loudness_plot(all_songs)
-    # songs_per_year = create_num_songs_per_year(all_songs)
-    # top_10_artists = create_top_artists_plot(all_songs)
-    # genres = create_genres_plot(all_songs)
-    # heatmap = create_heatmap_plot(all_songs)
-    # histo_popularity = create_histo_popularity(all_songs)
-    # danceability_energy = create_danceability_energy_plot(all_songs)
-    # popularity_over_time = create_populartity_over_time_plot(all_songs)
-    # loudness_by_genre = create_loudness_by_genre_plot(all_songs)
-    # artist_count = total_artists(all_songs)
-    # song_count = total_songs(all_songs)
-    # genre_count = total_genres(all_songs)
-    # album_count = total_albums(all_songs)
+    all_songs = Songs.query.filter_by(user_id=user_id).all()
+    
+    energy_loudness = create_energy_loudness_plot(all_songs)
+    popularity_loudness = create_popularity_loudness_plot(all_songs)
+    songs_per_year = create_num_songs_per_year(all_songs)
+    top_10_artists = create_top_artists_plot(all_songs)
+    genres = create_genres_plot(all_songs)
+    heatmap = create_heatmap_plot(all_songs)
+    popularity_histogram = create_histo_popularity(all_songs)
+    danceability_energy = create_danceability_energy_plot(all_songs)
+    popularity_over_time = create_populartity_over_time_plot(all_songs)
+    loudness_by_genre = create_loudness_by_genre_plot(all_songs)
+    artist_count = total_artists(all_songs)
+    song_count = total_songs(all_songs)
+    genre_count = total_genres(all_songs)
+    album_count = total_albums(all_songs)
     
     layout = html.Div([
         dcc.Location(id='url', refresh=True),
@@ -1226,7 +1222,7 @@ def saved_dash_application(dash_id):
                     html.H1(dashboard.dash_name)
                 ])
             ]),
-            html.Div(className='row', children=[
+            html.Div(className='row', id='main', children=[
                 html.Div(className='col-md-3', children=[
                     dcc.Graph(figure=eval(dashboard.kpi_1) if dashboard.kpi_1 is not None else None)
                 ]),
@@ -1287,6 +1283,7 @@ def profile_edit():
             user.first_name = form.first_name.data 
             user.last_name = form.last_name.data 
             user.email = form.email.data
+            user.username = form.user.username
             
             db.session.commit()
             flash('User updated!', 'success')
