@@ -15,6 +15,7 @@
           {{ field(placeholder=field.label.text, class="form-control") }}
         {% endfor %}
 
+        <p>Please make sure your username is your Spotify one.</p>
         <p>To confirm changes, enter your password:</p>
         {% if form.password.errors %}
           {% for error in form.password.errors %}
