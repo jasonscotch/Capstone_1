@@ -47,8 +47,6 @@ class DataLensTestCase(TestCase):
     
     def setUp(self):
         """Create test client, add sample data."""
-        db.drop_all()
-        db.create_all()
 
         user1 = User.signup("Jason", "Scott", "1211113167", "mason.scotch@gmail.com","password")
         
@@ -108,14 +106,14 @@ class DataLensTestCase(TestCase):
                 
             response = c.get('/dashboard')
             
-            assert response.status_code == 200
-            assert b'Energy vs Loudness' in response.data
-            assert b'Popularity vs Loudness' in response.data
-            assert b'Number of Songs per Year' in response.data
-            assert b'Top 10 Artists' in response.data
-            assert b'Genres' in response.data
-            assert b'Heatmap' in response.data
-            assert b'Popularity Distribution' in response.data
-            assert b'Danceability vs Energy' in response.data
-            assert b'Popularity Over Time' in response.data
-            assert b'Loudness by Genre' in response.data
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'Energy vs Loudness', response.data)
+            self.assertIn(b'Popularity vs Loudness', response.data)
+            self.assertIn(b'Number of Songs per Year', response.data)
+            self.assertIn(b'Top 10 Artists', response.data)
+            self.assertIn(b'Genres', response.data)
+            self.assertIn(b'Heatmap', response.data)
+            self.assertIn(b'Popularity Distribution', response.data)
+            self.assertIn(b'Danceability vs Energy', response.data)
+            self.assertIn(b'Popularity Over Time', response.data)
+            self.assertIn(b'Loudness by Genre', response.data)
