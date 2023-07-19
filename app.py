@@ -51,14 +51,13 @@ app.config.from_pyfile('config.py')
 app.config['ERROR_404_HELP'] = False
 
 connect_db(app)
-# db.drop_all()
+
 db.create_all()
 
 dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
 dash_app.config.suppress_callback_exceptions = True
 dash_app.scripts.config.serve_locally = True
 dash_app.css.config.serve_locally = True
-# dash_app.run_server(debug=True)
 
 
 if __name__ == "__main__":
@@ -92,6 +91,7 @@ def do_logout():
     logout_user()
     session.clear()
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
@@ -99,13 +99,13 @@ def load_user(user_id):
 
 @app.errorhandler(404)
 def page_not_found(e):
+    """Custom 404 page"""
     return render_template('404.html'), 404
 
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
     """Handles user signup."""
-    # session.clear()
     form = UserAddForm()
 
     if form.is_submitted() and form.validate():
@@ -134,7 +134,6 @@ def signup():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Handle user login."""
-    # session.clear()
     form = LoginForm()
     
     if form.is_submitted() and form.validate():
@@ -164,13 +163,14 @@ def logout():
     
 @app.route('/')
 def index():
-
+    """Index page of the app"""
     return redirect(url_for('login', _external=True))
 
 
 @app.route('/home')
 @login_required
 def homepage():
+    """Home page of app"""
     user_id = session[CURR_USER_KEY]
     dashboards = UserFavoriteDashboards.query.filter_by(user_id=user_id).all()
     
@@ -180,7 +180,7 @@ def homepage():
 @app.route('/gettracks')
 @login_required
 def gettracks():
- 
+    """Spotify API pull using the username to pull publis playlist data."""
     user = User.query.get(session[CURR_USER_KEY])
     auth_manager = SpotifyClientCredentials(client_id, client_secret)
     sp = spotipy.Spotify(auth_manager=auth_manager)
@@ -189,7 +189,6 @@ def gettracks():
     # Collect unique Spotify IDs of existing songs
     existing_spotify_ids_subquery = db.session.query(Songs.spotify_id).filter(Songs.user_id == user.user_id).subquery()
     existing_spotify_ids = {row[0] for row in db.session.query(existing_spotify_ids_subquery).with_entities(existing_spotify_ids_subquery.c.spotify_id).all()}
-
 
     # Collect data for new songs
     songs_to_add = []
@@ -206,7 +205,7 @@ def gettracks():
                     track = item['track']
                     spotify_id = track['id']
 
-                    if not spotify_id or spotify_id in existing_spotify_ids:
+                    if not spotify_id or spotify_id in existing_spotify_ids:  # checks if the song is already in the db or if the spotify id is not there (had an error with that)
                         continue
 
                     track_ids.append(spotify_id)
@@ -277,6 +276,7 @@ def gettracks():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    """Main dashboard that shows all available viz's"""
     user_id = session[CURR_USER_KEY]
     dashboards = UserFavoriteDashboards.query.filter_by(user_id=user_id).all()
     
@@ -299,6 +299,7 @@ def dashboard():
 @app.route('/dash')
 @login_required
 def dash_route():
+    """Allows a user to select different viz's to create and save their own custom dashboard"""
     create_dash_application()
     user_id = session[CURR_USER_KEY]
     dashboards = UserFavoriteDashboards.query.filter_by(user_id=user_id).all()
@@ -308,6 +309,7 @@ def dash_route():
 @app.route('/dash/<int:dash_id>')
 @login_required
 def saved_dash_route(dash_id):
+    """Displays the user's saved dashboard created above"""
     saved_dash_application(dash_id)
     user_id = session[CURR_USER_KEY]
     dashboards = UserFavoriteDashboards.query.filter_by(user_id=user_id).all()
@@ -615,7 +617,7 @@ def create_loudness_by_genre_plot(songs):
             })
     
     df = pd.DataFrame(song_data)
-
+    # Create box and whisker chart
     fig = px.box(
         df, 
         x='genre', 
@@ -636,7 +638,7 @@ def create_loudness_by_genre_plot(songs):
     
 def total_artists(songs):
     artist_count = len(set(song.artist for song in songs))
-    
+    # Total artist count KPI
     fig = go.Figure(go.Indicator(
         mode="number",
         value=artist_count,
@@ -650,7 +652,7 @@ def total_artists(songs):
 
 def total_songs(songs):
     song_count = len(set(song.name for song in songs))
-    
+    # Total song count KPI
     fig = go.Figure(go.Indicator(
         mode="number",
         value=song_count,
@@ -672,7 +674,7 @@ def total_genres(songs):
                 'genre': genre
             })
     genre_count = len(set(song['genre'] for song in song_data))
-    
+    # Total genre count KPI
     fig = go.Figure(go.Indicator(
         mode="number",
         value=genre_count,
@@ -686,7 +688,7 @@ def total_genres(songs):
 
 def total_albums(songs):
     album_count = len(set(song.album for song in songs))
-    
+    # Total album count KPI
     fig = go.Figure(go.Indicator(
         mode="number",
         value=album_count,
@@ -714,6 +716,7 @@ def update_dashboard_1(selected_viz):
     popularity_over_time_plot = create_populartity_over_time_plot(all_songs)
     loudness_by_genre_plot = create_loudness_by_genre_plot(all_songs)
     
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'energy_loudness':
         return html.Div(dcc.Graph(figure=energy_loudness_plot))
     elif selected_viz == 'popularity_loudness':
@@ -756,7 +759,7 @@ def update_dashboard_2(selected_viz):
     danceability_energy_plot = create_danceability_energy_plot(all_songs)
     popularity_over_time_plot = create_populartity_over_time_plot(all_songs)
     loudness_by_genre_plot = create_loudness_by_genre_plot(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'energy_loudness':
         return html.Div(dcc.Graph(figure=energy_loudness_plot))
     elif selected_viz == 'popularity_loudness':
@@ -799,7 +802,7 @@ def update_dashboard_3(selected_viz):
     danceability_energy_plot = create_danceability_energy_plot(all_songs)
     popularity_over_time_plot = create_populartity_over_time_plot(all_songs)
     loudness_by_genre_plot = create_loudness_by_genre_plot(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'energy_loudness':
         return html.Div(dcc.Graph(figure=energy_loudness_plot))
     elif selected_viz == 'popularity_loudness':
@@ -842,7 +845,7 @@ def update_dashboard_4(selected_viz):
     danceability_energy_plot = create_danceability_energy_plot(all_songs)
     popularity_over_time_plot = create_populartity_over_time_plot(all_songs)
     loudness_by_genre_plot = create_loudness_by_genre_plot(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'energy_loudness':
         return html.Div(dcc.Graph(figure=energy_loudness_plot))
     elif selected_viz == 'popularity_loudness':
@@ -879,7 +882,7 @@ def update_dashboard_5(selected_viz):
     song_count = total_songs(all_songs)
     genre_count = total_genres(all_songs)
     album_count = total_albums(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'artist_count':
         return html.Div(dcc.Graph(figure=artist_count))
     elif selected_viz == 'song_count':
@@ -904,7 +907,7 @@ def update_dashboard_6(selected_viz):
     song_count = total_songs(all_songs)
     genre_count = total_genres(all_songs)
     album_count = total_albums(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'artist_count':
         return html.Div(dcc.Graph(figure=artist_count))
     elif selected_viz == 'song_count':
@@ -929,7 +932,7 @@ def update_dashboard_7(selected_viz):
     song_count = total_songs(all_songs)
     genre_count = total_genres(all_songs)
     album_count = total_albums(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'artist_count':
         return html.Div(dcc.Graph(figure=artist_count))
     elif selected_viz == 'song_count':
@@ -954,7 +957,7 @@ def update_dashboard_8(selected_viz):
     song_count = total_songs(all_songs)
     genre_count = total_genres(all_songs)
     album_count = total_albums(all_songs)
-    
+    # Dropdown selection that displays the selected viz
     if selected_viz == 'artist_count':
         return html.Div(dcc.Graph(figure=artist_count))
     elif selected_viz == 'song_count':
@@ -971,6 +974,7 @@ def update_dashboard_8(selected_viz):
 
 
 def create_dash_application():
+    """Creates the dash application layout for the custom dashboard creation section"""
     layout = html.Div([
         dcc.Location(id='url', refresh=True),
         html.Div(className='container-fluid', children=[
@@ -1000,7 +1004,7 @@ def create_dash_application():
                             {'label': 'Album Count', 'value': 'album_count'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1016,7 +1020,7 @@ def create_dash_application():
                             {'label': 'Album Count', 'value': 'album_count'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1032,7 +1036,7 @@ def create_dash_application():
                             {'label': 'Album Count', 'value': 'album_count'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1048,7 +1052,7 @@ def create_dash_application():
                             {'label': 'Album Count', 'value': 'album_count'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1072,7 +1076,7 @@ def create_dash_application():
                             {'label': 'Loudness by Genre', 'value': 'loudness_by_genre'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1094,7 +1098,7 @@ def create_dash_application():
                             {'label': 'Loudness by Genre', 'value': 'loudness_by_genre'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1118,7 +1122,7 @@ def create_dash_application():
                             {'label': 'Loudness by Genre', 'value': 'loudness_by_genre'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1140,7 +1144,7 @@ def create_dash_application():
                             {'label': 'Loudness by Genre', 'value': 'loudness_by_genre'},
                             {'label': 'None', 'value': 'none'}
                         ],
-                        value=None,  # Set default value to None
+                        value=None,  
                         placeholder='Select a visualization',
                         style={'margin-bottom': '10px'}
                     ),
@@ -1165,6 +1169,7 @@ def create_dash_application():
         Input('save-button', 'n_clicks')
     )
     def save_dropdown_data(title, value1, value2, value3, value4, value5, value6, value7, value8, n_clicks):
+        """After the different dropdowns are selected, this saves the data to the db and redirects the user to their saved dashboard."""
         user_id = session[CURR_USER_KEY]
         if n_clicks is not None and n_clicks > 0:
             fav_dash = UserFavoriteDashboards(
@@ -1184,7 +1189,7 @@ def create_dash_application():
 
             print(fav_dash)
             pathname = f'/dash/{fav_dash.id}'
-            # flash('Dashboard Saved!', 'success')
+           
             return 'Dashboard Saved!', pathname
         
         return dash.no_update
@@ -1194,6 +1199,7 @@ def create_dash_application():
 
 
 def saved_dash_application(dash_id):
+    """Generated the saved dashboard the user created earlier. Saved data is the names of the different functions that create the viz."""
     user_id = session[CURR_USER_KEY]
     dashboard = UserFavoriteDashboards.query.filter_by(user_id=user_id).filter_by(id=dash_id).first()
     
@@ -1214,6 +1220,7 @@ def saved_dash_application(dash_id):
     genre_count = total_genres(all_songs)
     album_count = total_albums(all_songs)
     
+    # creates the dash layout to display the saved dashboard
     layout = html.Div([
         dcc.Location(id='url', refresh=True),
         html.Div(className='container-fluid', children=[
@@ -1262,7 +1269,7 @@ def saved_dash_application(dash_id):
 @app.route('/user/profile', methods=["GET", "POST"])
 @login_required
 def profile():
-    """Display current user's dashboards."""
+    """Display current user's details with the ability to edit them."""
     user_id = session[CURR_USER_KEY]
     dashboards = UserFavoriteDashboards.query.filter_by(user_id=user_id).all()
         
@@ -1283,7 +1290,7 @@ def profile_edit():
             user.first_name = form.first_name.data 
             user.last_name = form.last_name.data 
             user.email = form.email.data
-            user.username = form.user.username
+            user.username = form.username.data
             
             db.session.commit()
             flash('User updated!', 'success')
@@ -1299,13 +1306,14 @@ def profile_edit():
 def delete_user():
     """Delete user."""
     
-    user_id = g.user.user_id
-    user = User.query.get_or_404(user_id)
-    if user_id == session['_user_id']:  
+    user = g.user
+    
+    if user.is_authenticated and user.user_id == int(session[CURR_USER_KEY]):  
         db.session.delete(user)
         db.session.commit()
         flash('User deleted', 'success')
-        logout_user()  # Optional: Log out the user after deleting their account
+        logout_user() 
+        session.clear() 
         return redirect("/signup")
     else:
         flash('Access unauthorized.', 'danger')
