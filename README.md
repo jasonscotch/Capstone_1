@@ -11,7 +11,6 @@
     <br/>
     <br/>
     <a href="https://data-lens.onrender.com/">View Demo</a>
-    .
   </p>
 </p>
 
