@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/jasonscotch/Data-Lens">
-    <img src="static/images/dt.png" alt="Logo" width="80" height="80">
+    <img src="static/images/dt.png" alt="Logo" width="180" height="180">
   </a>
 
   <h3 align="center">Data-Lens</h3>
